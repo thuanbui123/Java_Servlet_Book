@@ -3,13 +3,6 @@ package com.example.dao.impl;
 import com.example.dao.IBookDAO;
 import com.example.mapper.BookMapper;
 import com.example.model.BookModel;
-import com.example.utils.ConfigDB;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 public class BookDAO extends AbstractDAO<BookModel> implements IBookDAO {
@@ -26,21 +19,30 @@ public class BookDAO extends AbstractDAO<BookModel> implements IBookDAO {
     }
 
     @Override
+    public BookModel findOneBookBySlug(String slug) {
+        String sql = "SELECT * FROM books WHERE books.slug = ?";
+        if (query(sql, new BookMapper(), slug).isEmpty()) {
+            return null;
+        }
+        return query(sql, new BookMapper(), slug).get(0);
+    }
+
+    @Override
     public Long addBook(BookModel bookModel) {
-        String sql = "INSERT INTO books (title, description, imageThumbnail, rate, liked, authorId, quantity) VALUES (?, ? ,? ,? ,? ,?, ? ,? , ?)";
-        return insert(sql, bookModel.getTitle(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getQuantity());
+        String sql = "INSERT INTO books (title, slug , description, imageThumbnail, rate, liked, authorId, categories, quantity) VALUES (?, ? ,? ,? ,? ,?, ? ,? , ?)";
+        return insert(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getCategories(), bookModel.getQuantity());
     }
 
     @Override
-    public void updateBook(BookModel bookModel, int id) {
-        String sql = "UPDATE books SET `title` = ?, `description` = ?, `imageThumbnail` = ?, `rate` = ?, `liked` = ? ,`authorId` = ?, `quantity` = ? WHERE `id` = ?";
-        update(sql, bookModel.getTitle(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getQuantity(), id);
+    public void updateBook(BookModel bookModel, String slug) {
+        String sql = "UPDATE books SET `title` = ?, `slug` = ?, `description` = ?, `imageThumbnail` = ?, `rate` = ?, `liked` = ? ,`authorId` = ?, categories = ?, `quantity` = ? WHERE `slug` = ?";
+        update(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getCategories(), bookModel.getQuantity(), slug);
     }
 
     @Override
-    public void deleteBook(int id) {
-        String sql = "DELETE FROM books WHERE id = ?";
-        update(sql, id);
+    public void deleteBook(String slug) {
+        String sql = "DELETE FROM books WHERE slug = ?";
+        update(sql, slug);
     }
 
 }

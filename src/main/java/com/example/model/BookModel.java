@@ -3,7 +3,7 @@ package com.example.model;
 import java.sql.Timestamp;
 
 public class BookModel extends AbstractModel {
-    private String title, description, imageThumbnail;
+    private String title, slug, description, imageThumbnail, categories;
     private float rate;
     private int authorId, liked, quantity;
 
@@ -11,11 +11,13 @@ public class BookModel extends AbstractModel {
 
     }
 
-    public BookModel(int id, Timestamp created_at, Timestamp updated_at, String title, String description, String imageThumbnail, float rate, int authorId, int liked, int quantity) {
+    public BookModel(int id, Timestamp created_at, Timestamp updated_at, String title, String slug, String description, String imageThumbnail, String categories, float rate, int authorId, int liked, int quantity) {
         super(id, created_at, updated_at);
         this.title = title;
+        this.slug = slug;
         this.description = description;
         this.imageThumbnail = imageThumbnail;
+        this.categories = categories;
         this.rate = rate;
         this.authorId = authorId;
         this.liked = liked;
@@ -46,6 +48,14 @@ public class BookModel extends AbstractModel {
         this.imageThumbnail = imageThumbnail;
     }
 
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
+
     public float getRate() {
         return rate;
     }
@@ -62,6 +72,14 @@ public class BookModel extends AbstractModel {
         this.authorId = authorId;
     }
 
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
     public int getLiked() {
         return liked;
     }
@@ -76,5 +94,17 @@ public class BookModel extends AbstractModel {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "AccountModel{" +
+                "title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", imageThumbnail='" + imageThumbnail + '\'' +
+                ", categories='" + categories + '\'' +
+                ", rate=" + rate +
+                ", authorId=" + authorId +
+                '}';
     }
 }

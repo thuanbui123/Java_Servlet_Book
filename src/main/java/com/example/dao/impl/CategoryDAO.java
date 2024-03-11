@@ -2,7 +2,6 @@ package com.example.dao.impl;
 
 import com.example.dao.ICategoryDAO;
 import com.example.mapper.CategoryMapper;
-import com.example.model.AbstractModel;
 import com.example.model.CategoryModel;
 
 import java.util.List;
@@ -17,13 +16,26 @@ public class CategoryDAO extends AbstractDAO<CategoryModel> implements ICategory
     @Override
     public CategoryModel findOneCategory(String slug) {
         String sql = "SELECT * FROM category WHERE slug = ?";
+        if (query(sql, new CategoryMapper(), slug).isEmpty()) {
+            return null;
+        }
         return query(sql, new CategoryMapper(), slug).get(0);
     }
 
     @Override
     public Long addCategory(CategoryModel categoryModel) {
         String sql = "INSERT INTO category (name, slug) VALUES (? , ?)";
-        return insert(sql, categoryModel.getName(), categoryModel.getSlug());
+        if (categoryModel.getName().isEmpty() || categoryModel.getSlug().isEmpty()) {
+            return null;
+        } else {
+            CategoryModel categoryModel1 = findOneCategory(categoryModel.getSlug());
+            if (categoryModel1 == null) {
+                return insert(sql, categoryModel.getName(), categoryModel.getSlug());
+
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
