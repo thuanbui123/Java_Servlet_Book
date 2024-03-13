@@ -16,7 +16,12 @@ public class AuthorDAO extends AbstractDAO<AuthorModel> implements IAuthorDAO {
     @Override
     public AuthorModel findAuthorBySlug(String slug) {
         String sql = "SELECT * FROM author WHERE slug = ?";
-        return query(sql, new AuthorMapper(), slug).get(0);
+        List<AuthorModel> list = query(sql, new AuthorMapper(), slug);
+        if(list.isEmpty() || list == null) {
+            return null;
+        } else {
+            return list.get(0);
+        }
     }
 
     @Override

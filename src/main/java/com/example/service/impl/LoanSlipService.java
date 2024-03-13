@@ -1,8 +1,5 @@
 package com.example.service.impl;
 
-import com.example.dao.IAccount;
-import com.example.dao.IBookDAO;
-import com.example.dao.ILoanSlipDAO;
 import com.example.dao.impl.AccountDAO;
 import com.example.dao.impl.BookDAO;
 import com.example.dao.impl.LoanSlipDAO;
@@ -11,6 +8,8 @@ import com.example.model.BookModel;
 import com.example.model.LoanSlipModel;
 import com.example.service.ILoanSlipService;
 import com.example.utils.HttpUtil;
+import com.example.utils.ResponseAPIUtils;
+import com.example.wrapper.WrapperResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +23,7 @@ public class LoanSlipService implements ILoanSlipService {
     private final LoanSlipDAO loanSlipDAO = new LoanSlipDAO();
     private final AccountDAO accountDAO = new AccountDAO();
     private final BookDAO bookDAO = new BookDAO();
+    private final ResponseAPIUtils<LoanSlipModel> responseAPIUtils = new ResponseAPIUtils<>();
     @Override
     public List<LoanSlipModel> findAll() {
         return loanSlipDAO.findALl();
@@ -42,10 +42,9 @@ public class LoanSlipService implements ILoanSlipService {
     @Override
     public LoanSlipModel save(LoanSlipModel loanSlipModel) {
         boolean isExistBook = loanSlipDAO.isExistBookInLoanSlip(loanSlipModel.getCode(), loanSlipModel.getIdBook());
-        boolean isExistLoanSlip = loanSlipDAO.isExistCode(loanSlipModel.getCode());
-        if(!isExistBook && ! isExistLoanSlip) {
-            Long id = loanSlipDAO.addLoanSlip(loanSlipModel);
-            return findOneById(id);
+        if(!isExistBook) {
+            loanSlipDAO.addLoanSlip(loanSlipModel);
+            return loanSlipDAO.findOneById(loanSlipModel.getId());
         }
         return null;
     }
@@ -61,21 +60,32 @@ public class LoanSlipService implements ILoanSlipService {
         loanSlipDAO.deleteLoanSlip(id);
     }
 
-    public void deleteData (String pathInfo,HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
+    public void deleteData (String pathInfo,HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
         resp.setContentType("application/json");
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
+        WrapperResponse<LoanSlipModel> wrapperResponse = new WrapperResponse<>();
         if(pathInfo != null && !pathInfo.isEmpty()) {
             String[]path = pathInfo.split("/");
             if(path.length == 3) {
                 if(path[1].equals("delete")) {
                     int id = Integer.parseInt(path[2]);
-                    delete(id);
+                    LoanSlipModel findLoanSlip = findOneById((long) id);
+                    if(findLoanSlip != null) {
+                        delete(id);
+                        responseAPIUtils.deleteSuccess(wrapperResponse, resp);
+                    } else {
+                        responseAPIUtils.notFoundAPI(wrapperResponse, resp);
+                    }
+                } else {
+                    responseAPIUtils.notFoundAPI(wrapperResponse, resp);
                 }
             }
         } else {
-            resp.setStatus(400);
+            responseAPIUtils.notFoundAPI(wrapperResponse, resp);
         }
+        mapper.writeValue(resp.getOutputStream(), wrapperResponse);
     }
 
     public void updateData(String pathInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -83,6 +93,9 @@ public class LoanSlipService implements ILoanSlipService {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+
+        WrapperResponse<LoanSlipModel> wrapperResponse = new WrapperResponse<>();
+
         LoanSlipModel loanSlipModel = HttpUtil.of(req.getReader()).toModel(LoanSlipModel.class);
         if (pathInfo != null && !pathInfo.isEmpty()) {
             String[] path = pathInfo.split("/");
@@ -90,10 +103,17 @@ public class LoanSlipService implements ILoanSlipService {
                 if (path[1].equals("update")) {
                     int id = Integer.parseInt(path[2]);
                     LoanSlipModel saveLoanSlip = update(loanSlipModel, id);
-                    mapper.writeValue(resp.getOutputStream(), saveLoanSlip);
+                    ArrayList<LoanSlipModel> list = new ArrayList<>();
+                    list.add(saveLoanSlip);
+                    responseAPIUtils.updateSuccess(wrapperResponse, list, resp);
                 }
+            } else {
+                responseAPIUtils.ServerError(wrapperResponse, resp);
             }
+        } else {
+            responseAPIUtils.notFoundAPI(wrapperResponse, resp);
         }
+        mapper.writeValue(resp.getOutputStream(), wrapperResponse);
     }
 
     public void insertData(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -101,24 +121,40 @@ public class LoanSlipService implements ILoanSlipService {
         resp.setContentType("application/json");
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
+        WrapperResponse<LoanSlipModel> wrapperResponse = new WrapperResponse<>();
         LoanSlipModel loanSlipModel = HttpUtil.of(req.getReader()).toModel(LoanSlipModel.class);
-        LoanSlipModel saveLoanSlip = save(loanSlipModel);
-        if(saveLoanSlip != null) {
-            resp.setStatus(201);
-            mapper.writeValue(resp.getOutputStream(), saveLoanSlip);
+        if (loanSlipModel.getIdBook() == 0 || loanSlipModel.getCode() == null || loanSlipModel.getCode().isEmpty() || loanSlipModel.getIdAccount() == 0) {
+            responseAPIUtils.requiredDataAPI(wrapperResponse, resp);
         } else {
-            resp.setStatus(422);
+            LoanSlipModel findLoanSlip = findOneById(Long.valueOf(loanSlipModel.getId()+""));
+            if(findLoanSlip == null) {
+                LoanSlipModel saveLoanSlip = save(loanSlipModel);
+                ArrayList<LoanSlipModel> list = new ArrayList<>();
+                if(saveLoanSlip != null) {
+                    list.add(saveLoanSlip);
+                    responseAPIUtils.insertSuccess(wrapperResponse, list, resp);
+                } else {
+                    responseAPIUtils.duplicateDataAPI(wrapperResponse, resp);
+                }
+            } else {
+                responseAPIUtils.duplicateDataAPI(wrapperResponse, resp);
+            }
         }
+        mapper.writeValue(resp.getOutputStream(), wrapperResponse);
     }
 
     public LoanSlipModel findOneById (Long id) {
         LoanSlipModel loanSlipModel = (LoanSlipModel) loanSlipDAO.findOneById(Integer.parseInt(id.toString()));
-        AccountModel accountModel = accountDAO.findOneById(loanSlipModel.getIdAccount()+"");
-        BookModel bookModel = bookDAO.findOneBookById(loanSlipModel.getIdBook());
-        loanSlipModel.setUserName(accountModel.getUsername());
-        loanSlipModel.setNumberPhone(accountModel.getPhoneNumber());
-        loanSlipModel.setTitle(bookModel.getTitle());
-        return loanSlipModel;
+        if(loanSlipModel !=null) {
+            AccountModel accountModel = accountDAO.findOneById(loanSlipModel.getIdAccount()+"");
+            BookModel bookModel = bookDAO.findOneBookById(loanSlipModel.getIdBook());
+            loanSlipModel.setUserName(accountModel.getUsername());
+            loanSlipModel.setNumberPhone(accountModel.getPhoneNumber());
+            loanSlipModel.setTitle(bookModel.getTitle());
+            return loanSlipModel;
+        } else {
+            return null;
+        }
     }
 
     public void findData(String idLoanSlip, String idAccount, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -128,6 +164,7 @@ public class LoanSlipService implements ILoanSlipService {
         resp.setContentType("application/json");
 
         ArrayList<LoanSlipModel> list = new ArrayList<>();
+        WrapperResponse<LoanSlipModel> wrapperResponse = new WrapperResponse<>();
 
         if(idLoanSlip != null && idAccount != null) {
             Integer idAccountInt = 0;
@@ -153,9 +190,8 @@ public class LoanSlipService implements ILoanSlipService {
                 BookModel bookModel = bookDAO.findOneBookById(list.get(i).getIdBook());
                 list.get(i).setTitle(bookModel.getTitle());
             }
-            mapper.writeValue(resp.getOutputStream(), list);
-        } else {
-            resp.setStatus(404);
+            responseAPIUtils.getDataSuccess(wrapperResponse, list, resp);
         }
+        mapper.writeValue(resp.getOutputStream(), wrapperResponse);
     }
 }

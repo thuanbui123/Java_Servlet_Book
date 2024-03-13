@@ -12,6 +12,8 @@ public interface IAccount {
 
     AccountModel signInAccount(String username, String password);
 
+    AccountModel findOneById(String id);
+
     void registerAccount(AccountModel account);
 
 

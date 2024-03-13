@@ -21,10 +21,12 @@ public class BookDAO extends AbstractDAO<BookModel> implements IBookDAO {
     @Override
     public BookModel findOneBookBySlug(String slug) {
         String sql = "SELECT * FROM books WHERE books.slug = ?";
-        if (query(sql, new BookMapper(), slug).isEmpty()) {
+        List<BookModel> list = query(sql, new BookMapper(), slug);
+        if (list != null && !list.isEmpty()) {
+            return list.get(0);
+        }else {
             return null;
         }
-        return query(sql, new BookMapper(), slug).get(0);
     }
 
     @Override

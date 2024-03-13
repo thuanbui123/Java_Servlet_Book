@@ -19,7 +19,7 @@ public class ConfigDB {
         String theDBUrl = props.getProperty("dburl");
 
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mana_book?autoReconnect=true&useSSL=false", "root", "password");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mana_book?autoReconnect=true&useSSL=false", "root", "Thuan0101#");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

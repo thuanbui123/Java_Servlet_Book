@@ -9,15 +9,13 @@ public class LoanSlipModel extends AbstractModel{
     public LoanSlipModel() {
     }
 
-    public LoanSlipModel(int id, Timestamp created_at, Timestamp updated_at, int idAccount, int idBook, String userName, String numberPhone, String title, String code) {
-        super(id, created_at, updated_at);
+    public LoanSlipModel(int idAccount, int idBook, String code) {
         this.idAccount = idAccount;
         this.idBook = idBook;
-        this.userName = userName;
-        this.numberPhone = numberPhone;
-        this.title = title;
         this.code = code;
     }
+
+
 
     public int getIdAccount() {
         return idAccount;
