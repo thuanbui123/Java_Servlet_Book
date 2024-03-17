@@ -3,42 +3,56 @@ package com.example.dao.impl;
 import com.example.dao.IBookDAO;
 import com.example.mapper.BookMapper;
 import com.example.model.BookModel;
+import com.example.model.CategoryModel;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BookDAO extends AbstractDAO<BookModel> implements IBookDAO {
     @Override
     public List<BookModel> findAllBooks() {
-        String sql = "SELECT * FROM books ORDER BY books.title ASC";
-        return query(sql, new BookMapper());
+        String sql = "SELECT DISTINCT * FROM books, author, category ,categoriesonbook WHERE books.id = categoriesonbook.bookId AND category.id = categoriesonbook.categoryId AND books.authorId = author.id ORDER BY books.title ASC";
+        List<BookModel> bookModels = query(sql, new BookMapper());
+        bookModels.removeIf(Objects::isNull);
+        return bookModels;
     }
 
     @Override
     public BookModel findOneBookById(int id) {
-        String sql = "SELECT * FROM books WHERE books.id = ?";
+        String sql = "SELECT DISTINCT * FROM books WHERE books.id = ?";
         return query(sql, new BookMapper(), id).get(0);
     }
 
     @Override
     public BookModel findOneBookBySlug(String slug) {
-        String sql = "SELECT * FROM books WHERE books.slug = ?";
-        List<BookModel> list = query(sql, new BookMapper(), slug);
-        if (list != null && !list.isEmpty()) {
-            return list.get(0);
-        }else {
+        String sql = "SELECT DISTINCT * FROM books, author, category ,categoriesonbook WHERE books.id = categoriesonbook.bookId AND category.id = categoriesonbook.categoryId AND books.authorId = author.id AND books.slug = ?";
+        if (query(sql, new BookMapper(), slug).isEmpty()) {
             return null;
         }
+        return query(sql, new BookMapper(), slug).get(0);
     }
 
     @Override
     public Long addBook(BookModel bookModel) {
-        String sql = "INSERT INTO books (title, slug , description, imageThumbnail, rate, liked, authorId, categories, quantity) VALUES (?, ? ,? ,? ,? ,?, ? ,? , ?)";
-        return insert(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getCategories(), bookModel.getQuantity());
+        String sql = "INSERT INTO books (title, slug , description, imageThumbnail, rate, liked, authorId, quantity) VALUES (?, ? ,? ,? ,? ,?, ? , ?)";
+        return insert(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthors().getId(), bookModel.getQuantity());
+    }
+
+    public void addCategoriesOnBook(ArrayList<CategoryModel> categoryModels, long idBook) {
+        String sqlCategoriesOnBook = "INSERT INTO categoriesonbook (categoryId, bookId) VALUES (? , ?)";
+        categoryModels.forEach(categoryModel -> insert(sqlCategoriesOnBook, categoryModel.getId(), idBook));
     }
 
     @Override
     public void updateBook(BookModel bookModel, String slug) {
-        String sql = "UPDATE books SET `title` = ?, `slug` = ?, `description` = ?, `imageThumbnail` = ?, `rate` = ?, `liked` = ? ,`authorId` = ?, categories = ?, `quantity` = ? WHERE `slug` = ?";
-        update(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthorId(), bookModel.getCategories(), bookModel.getQuantity(), slug);
+        String sql = "UPDATE books SET `title` = ?, `slug` = ?, `description` = ?, `imageThumbnail` = ?, `rate` = ?, `liked` = ? ,`authorId` = ?, `quantity` = ? WHERE `slug` = ?";
+        update(sql, bookModel.getTitle(), bookModel.getSlug(), bookModel.getDescription(), bookModel.getImageThumbnail(), bookModel.getRate(), bookModel.getLiked(), bookModel.getAuthors().getId(), bookModel.getQuantity(), slug);
+    }
+
+    public void deleteCategoriesOnBook(BookModel bookModel) {
+        String sqlDeleteCategoriesOnBook = "DELETE FROM categoriesonbook WHERE bookId = ?";
+        update(sqlDeleteCategoriesOnBook, bookModel.getId());
     }
 
     @Override

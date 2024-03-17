@@ -10,9 +10,9 @@ public interface IAccount {
 
     AccountModel findOneAccount(String username);
 
-    AccountModel signInAccount(String username, String password);
-
     AccountModel findOneById(String id);
+
+    AccountModel signInAccount(String username, String password);
 
     void registerAccount(AccountModel account);
 

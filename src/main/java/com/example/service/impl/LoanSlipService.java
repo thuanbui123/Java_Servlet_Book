@@ -21,8 +21,7 @@ import java.util.List;
 
 public class LoanSlipService implements ILoanSlipService {
     private final LoanSlipDAO loanSlipDAO = new LoanSlipDAO();
-    private final AccountDAO accountDAO = new AccountDAO();
-    private final BookDAO bookDAO = new BookDAO();
+
     private final ResponseAPIUtils<LoanSlipModel> responseAPIUtils = new ResponseAPIUtils<>();
     @Override
     public List<LoanSlipModel> findAll() {
@@ -43,8 +42,8 @@ public class LoanSlipService implements ILoanSlipService {
     public LoanSlipModel save(LoanSlipModel loanSlipModel) {
         boolean isExistBook = loanSlipDAO.isExistBookInLoanSlip(loanSlipModel.getCode(), loanSlipModel.getIdBook());
         if(!isExistBook) {
-            loanSlipDAO.addLoanSlip(loanSlipModel);
-            return loanSlipDAO.findOneById(loanSlipModel.getId());
+            Long id = loanSlipDAO.addLoanSlip(loanSlipModel);
+            return loanSlipDAO.findOneById(Integer.parseInt(id.toString()));
         }
         return null;
     }
@@ -126,16 +125,11 @@ public class LoanSlipService implements ILoanSlipService {
         if (loanSlipModel.getIdBook() == 0 || loanSlipModel.getCode() == null || loanSlipModel.getCode().isEmpty() || loanSlipModel.getIdAccount() == 0) {
             responseAPIUtils.requiredDataAPI(wrapperResponse, resp);
         } else {
-            LoanSlipModel findLoanSlip = findOneById(Long.valueOf(loanSlipModel.getId()+""));
-            if(findLoanSlip == null) {
-                LoanSlipModel saveLoanSlip = save(loanSlipModel);
+            LoanSlipModel saveLoanSlip = save(loanSlipModel);
+            if(saveLoanSlip != null) {
                 ArrayList<LoanSlipModel> list = new ArrayList<>();
-                if(saveLoanSlip != null) {
-                    list.add(saveLoanSlip);
-                    responseAPIUtils.insertSuccess(wrapperResponse, list, resp);
-                } else {
-                    responseAPIUtils.duplicateDataAPI(wrapperResponse, resp);
-                }
+                list.add(saveLoanSlip);
+                responseAPIUtils.insertSuccess(wrapperResponse, list, resp);
             } else {
                 responseAPIUtils.duplicateDataAPI(wrapperResponse, resp);
             }
@@ -146,18 +140,13 @@ public class LoanSlipService implements ILoanSlipService {
     public LoanSlipModel findOneById (Long id) {
         LoanSlipModel loanSlipModel = (LoanSlipModel) loanSlipDAO.findOneById(Integer.parseInt(id.toString()));
         if(loanSlipModel !=null) {
-            AccountModel accountModel = accountDAO.findOneById(loanSlipModel.getIdAccount()+"");
-            BookModel bookModel = bookDAO.findOneBookById(loanSlipModel.getIdBook());
-            loanSlipModel.setUserName(accountModel.getUsername());
-            loanSlipModel.setNumberPhone(accountModel.getPhoneNumber());
-            loanSlipModel.setTitle(bookModel.getTitle());
             return loanSlipModel;
         } else {
             return null;
         }
     }
 
-    public void findData(String idLoanSlip, String idAccount, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void findData(String pathInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         resp.setCharacterEncoding("UTF-8");
         req.setCharacterEncoding("UTF-8");
@@ -166,30 +155,27 @@ public class LoanSlipService implements ILoanSlipService {
         ArrayList<LoanSlipModel> list = new ArrayList<>();
         WrapperResponse<LoanSlipModel> wrapperResponse = new WrapperResponse<>();
 
-        if(idLoanSlip != null && idAccount != null) {
-            Integer idAccountInt = 0;
-            try {
-                idAccountInt = Integer.parseInt(idAccount);
-            } catch (NumberFormatException ex) {
-                mapper.writeValue(resp.getOutputStream(), ex);
-            }
-            list = (ArrayList<LoanSlipModel>) findByIdLoanSlipAndIdAccount(idLoanSlip, idAccountInt);
-        } else if (idLoanSlip != null && idAccount == null) {
-            list = (ArrayList<LoanSlipModel>) findOneByIdLoanSlip(idLoanSlip);
-        } else if (idLoanSlip == null && idAccount == null) {
+        if(pathInfo == null || pathInfo.equals("/")) {
             list = (ArrayList<LoanSlipModel>) findAll();
-        }
+        } else {
+            String[] path = pathInfo.split("/");
+            if(path.length == 5) {
+                String idLoanSlipStr = path[2];
+                String idAccountStr = path[4];
 
-        if(!list.isEmpty()) {
-            int length = list.size();
-            for (int i = 0; i < length; i++) {
-                String id = list.get(i).getIdAccount() + "";
-                AccountModel accountModel = accountDAO.findOneById(id);
-                list.get(i).setUserName(accountModel.getUsername());
-                list.get(i).setNumberPhone(accountModel.getPhoneNumber());
-                BookModel bookModel = bookDAO.findOneBookById(list.get(i).getIdBook());
-                list.get(i).setTitle(bookModel.getTitle());
+                int idAccount = 0;
+                try {
+                    idAccount = Integer.parseInt(idAccountStr);
+                } catch (NumberFormatException ex) {
+                    mapper.writeValue(resp.getOutputStream(), ex);
+                }
+                list = (ArrayList<LoanSlipModel>) findByIdLoanSlipAndIdAccount(idLoanSlipStr, idAccount);
+            } else if(path.length == 3) {
+                String idLoanSlipStr = path[2];
+                list = (ArrayList<LoanSlipModel>) findOneByIdLoanSlip(String.valueOf(idLoanSlipStr));
             }
+        }
+        if(list != null && !list.isEmpty()) {
             responseAPIUtils.getDataSuccess(wrapperResponse, list, resp);
         }
         mapper.writeValue(resp.getOutputStream(), wrapperResponse);

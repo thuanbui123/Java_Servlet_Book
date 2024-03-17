@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public class LoanSlipModel extends AbstractModel{
     private int idAccount, idBook;
-    private String userName, numberPhone, title, code;
+    private String userName, numberPhone, code, title;
 
     public LoanSlipModel() {
     }
@@ -49,19 +49,19 @@ public class LoanSlipModel extends AbstractModel{
         this.numberPhone = numberPhone;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getCode() {
         return code;
     }
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

@@ -16,9 +16,8 @@ public class LoanSlip extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String idLoanSlip = req.getParameter("idLoanSlip");
-        String idAccount = req.getParameter("idAccount");
-        loanSlipService.findData(idLoanSlip, idAccount, req, resp);
+        String pathInfo = req.getPathInfo();
+        loanSlipService.findData(pathInfo, req, resp);
     }
 
     @Override

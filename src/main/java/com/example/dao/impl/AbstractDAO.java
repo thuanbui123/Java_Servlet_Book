@@ -1,6 +1,6 @@
 package com.example.dao.impl;
 
-import com.example.controller.admin.api.BookAPI;
+
 import com.example.dao.GenericDAO;
 import com.example.mapper.RowMapper;
 import com.example.utils.ConfigDB;
@@ -8,7 +8,6 @@ import com.example.utils.ConfigDB;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class AbstractDAO<T> implements GenericDAO<T> {
     @Override
@@ -113,21 +112,18 @@ public class AbstractDAO<T> implements GenericDAO<T> {
 
             statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             setParameter(statement, parameters);
-            statement.executeUpdate();
-            resultSet = statement.getGeneratedKeys();
-
+            statement.executeUpdate(); // INSERT UPDATE, DELETE
+            resultSet = statement.getGeneratedKeys(); //4
             if (resultSet.next()) {
                 id = resultSet.getLong(1);
             }
-            connection.commit();
-
+            connection.commit(); // confirm viec
             return id;
         } catch (Exception e) {
             if (connection != null) {
                 try {
                     connection.rollback();
                 } catch (SQLException ex1) {
-                    ex1.printStackTrace();
                 }
             }
         } finally {
