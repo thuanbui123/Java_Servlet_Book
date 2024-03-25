@@ -1,11 +1,12 @@
 package com.example.model;
 
-import java.sql.Timestamp;
 
 public class LoanSlipModel extends AbstractModel{
     private int idAccount, idBook;
-    private String userName, numberPhone, code, title;
-
+    private String userName;
+    private String numberPhone;
+    private String code;
+    private String title, created, updated;
     public LoanSlipModel() {
     }
 
@@ -63,5 +64,21 @@ public class LoanSlipModel extends AbstractModel{
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getCreated() {
+        return created;
+    }
+
+    public void setCreated(String created) {
+        this.created = created;
+    }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
     }
 }

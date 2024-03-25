@@ -1,12 +1,13 @@
 package com.example.mapper;
 
-import com.example.model.BookModel;
 import com.example.model.LoanSlipModel;
+import com.example.utils.TimeConvertUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class LoanSlipMapper implements RowMapper<LoanSlipModel>{
+
     @Override
     public LoanSlipModel mapRow(ResultSet rs) {
         try {
@@ -21,6 +22,9 @@ public class LoanSlipMapper implements RowMapper<LoanSlipModel>{
             loanSlipModel.setTitle(rs.getString("title"));
             loanSlipModel.setUserName(rs.getString("username"));
             loanSlipModel.setNumberPhone(rs.getString("numberPhone"));
+
+            loanSlipModel.setCreated(TimeConvertUtils.convertTimestampToDate(rs.getTimestamp("loanSlip.created_at")));
+            loanSlipModel.setUpdated(TimeConvertUtils.convertTimestampToDate(rs.getTimestamp("loanSlip.updated_at")));
 
             return loanSlipModel;
         }catch (SQLException e) {
