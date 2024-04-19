@@ -1,12 +1,12 @@
 package com.example.dao.impl;
 
-import com.example.dao.IAccount;
+import com.example.dao.IAccountDAO;
 import com.example.mapper.AccountMapper;
 import com.example.model.AccountModel;
 
 import java.util.List;
 
-public class AccountDAO extends AbstractDAO<AccountModel> implements IAccount {
+public class AccountDAO extends AbstractDAO<AccountModel> implements IAccountDAO {
     @Override
     public List<AccountModel> findAllAccount() {
         String sql = "SELECT * FROM account ORDER BY username ASC";
@@ -22,6 +22,15 @@ public class AccountDAO extends AbstractDAO<AccountModel> implements IAccount {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<AccountModel> findAllUserAccount() {
+        String sql = "SELECT * FROM account WHERE role = 0";
+        if (!query(sql, new AccountMapper()).isEmpty()) {
+            return query(sql, new AccountMapper());
+        }
+        return null;
     }
 
     @Override
@@ -48,7 +57,7 @@ public class AccountDAO extends AbstractDAO<AccountModel> implements IAccount {
 
     @Override
     public void registerAccount(AccountModel account) {
-        String sql = "INSERT INTO account (username, password, email, numberPhone, role) VALUES (? , ? , ?, ?, 0)";
+        String sql = "INSERT INTO account (username, password, email, phoneNumber, role) VALUES (? , ? , ?, ?, 0)";
         insert(sql, account.getUsername(), account.getPassword(), account.getEmail(), account.getPhoneNumber());
     }
 }

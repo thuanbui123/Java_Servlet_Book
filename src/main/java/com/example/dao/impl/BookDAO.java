@@ -20,14 +20,26 @@ public class BookDAO extends AbstractDAO<BookModel> implements IBookDAO {
 
     @Override
     public BookModel findOneBookById(int id) {
-        String sql = "SELECT DISTINCT * FROM books WHERE books.id = ?";
+        String sql = "SELECT DISTINCT * FROM books, author, category ,categoriesonbook WHERE books.id = categoriesonbook.bookId AND category.id = categoriesonbook.categoryId AND books.authorId = author.id AND books.id = ?";
         return query(sql, new BookMapper(), id).get(0);
+    }
+
+    @Override
+    public List<BookModel> findBookByQuery(String query) {
+        String sql = "SELECT DISTINCT * FROM books, author, category ,categoriesonbook WHERE books.id = categoriesonbook.bookId AND category.id = categoriesonbook.categoryId AND books.authorId = author.id AND title LIKE '%" + query + "%' ORDER BY title ASC";
+        List<BookModel> bookModels = query(sql, new BookMapper());
+        if (bookModels == null) {
+            return null;
+        } else {
+            bookModels.removeIf(Objects::isNull);
+        }
+        return bookModels;
     }
 
     @Override
     public BookModel findOneBookBySlug(String slug) {
         String sql = "SELECT DISTINCT * FROM books, author, category ,categoriesonbook WHERE books.id = categoriesonbook.bookId AND category.id = categoriesonbook.categoryId AND books.authorId = author.id AND books.slug = ?";
-        if (query(sql, new BookMapper(), slug).isEmpty()) {
+        if (query(sql, new BookMapper(), slug) == null || query(sql, new BookMapper(), slug).isEmpty()) {
             return null;
         }
         return query(sql, new BookMapper(), slug).get(0);

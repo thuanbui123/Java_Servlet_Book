@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/api-admin-loan-slip", "/api-admin-loan-slip/*"})
-public class LoanSlip extends HttpServlet {
+public class LoanSlipAPI extends HttpServlet {
 
     private final LoanSlipService loanSlipService = new LoanSlipService();
 
@@ -21,18 +21,18 @@ public class LoanSlip extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         loanSlipService.insertData(req, resp);
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         loanSlipService.deleteData(pathInfo, req, resp);
     }
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
         loanSlipService.updateData(pathInfo, req, resp);
     }

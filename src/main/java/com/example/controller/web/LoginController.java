@@ -3,13 +3,13 @@ package com.example.controller.web;
 import com.example.model.AccountModel;
 import com.example.service.impl.AccountService;
 import com.example.utils.FormUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -18,6 +18,7 @@ public class LoginController extends HttpServlet {
     private final AccountService accountService = new AccountService();
 
     private String message;
+
     public void init() {
         message = "Username or password is invalid";
     }
@@ -44,14 +45,15 @@ public class LoginController extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         String action = req.getParameter("action");
-
+        HttpSession session = req.getSession();
         if (action != null && action.equals("login")) {
             AccountModel accountModel = FormUtils.toModel(AccountModel.class, req);
             AccountModel accountModel1 = accountService.login(accountModel.getUsername(), accountModel.getPassword());
             if (accountModel1 == null) {
                 resp.sendRedirect(req.getContextPath() + "/login?action=login&status=false");
             } else {
-                resp.sendRedirect(req.getContextPath() + "/home");
+                session.setAttribute("username", accountModel1.getUsername());
+                resp.sendRedirect(req.getContextPath() + "/book");
             }
         }
     }

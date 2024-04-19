@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.model.AuthorModel;
-import com.example.model.BookModel;
 
 import java.util.List;
 
@@ -11,6 +10,7 @@ public interface IAuthorService {
 
     List<AuthorModel> findAllAuthors();
 
+    List<AuthorModel> findAuthorsByQuery(String query);
     AuthorModel save(AuthorModel authorModel);
 
     void delete(String slug);

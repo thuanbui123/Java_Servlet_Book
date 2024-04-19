@@ -21,7 +21,7 @@ public class LoanSlipMapper implements RowMapper<LoanSlipModel>{
             loanSlipModel.setUpdated_at(rs.getTimestamp("loanSlip.updated_at"));
             loanSlipModel.setTitle(rs.getString("title"));
             loanSlipModel.setUserName(rs.getString("username"));
-            loanSlipModel.setNumberPhone(rs.getString("numberPhone"));
+            loanSlipModel.setNumberPhone(rs.getString("phoneNumber"));
 
             loanSlipModel.setCreated(TimeConvertUtils.convertTimestampToDate(rs.getTimestamp("loanSlip.created_at")));
             loanSlipModel.setUpdated(TimeConvertUtils.convertTimestampToDate(rs.getTimestamp("loanSlip.updated_at")));

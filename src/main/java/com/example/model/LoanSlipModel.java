@@ -1,12 +1,13 @@
 package com.example.model;
 
 
-public class LoanSlipModel extends AbstractModel{
+public class LoanSlipModel extends AbstractModel {
     private int idAccount, idBook;
     private String userName;
     private String numberPhone;
     private String code;
     private String title, created, updated;
+
     public LoanSlipModel() {
     }
 
@@ -15,8 +16,6 @@ public class LoanSlipModel extends AbstractModel{
         this.idBook = idBook;
         this.code = code;
     }
-
-
 
     public int getIdAccount() {
         return idAccount;
